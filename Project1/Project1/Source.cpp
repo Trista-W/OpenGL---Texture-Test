@@ -1,9 +1,9 @@
-//Jeff Chastine
+
 #include <Windows.h>
 #include <GL\glew.h>
 #include <GL\freeglut.h>
 #include <iostream>
-#define FileName "Texture.bmp"
+//#define FileName "Texture.bmp"
 #define _CRT_SECURE_NO_DEPRECATE
 //#define WindowWidth  400
 //#define WindowHeight 400
@@ -13,12 +13,12 @@ static GLint imagewidth;
 static GLint imageheight;
 static GLint pixellength;
 static GLubyte* pixeldata;
-GLubyte* pixels = 0;
+static GLubyte* pixels = 0;
 
-//定义两个纹理对象编号
 GLuint texGround;
 
 static GLfloat angle = 0.0f;
+GLuint texture_ID;
 
 
 
@@ -70,6 +70,7 @@ static GLfloat angle = 0.0f;
 //		return 0;
 //	}
 //
+//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //	glEnable(GL_TEXTURE_2D);  //临时放一下 做测试
 //	glGenTextures(1, &texGround);
 //	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);*/
@@ -94,7 +95,7 @@ static GLfloat angle = 0.0f;
 //	// 清除屏幕
 //	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);	// clear to black
-//
+//	glDrawPixels(imagewidth, imageheight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixels);
 //	// 设置视角
 //	glMatrixMode(GL_PROJECTION);
 //	glLoadIdentity();
@@ -109,10 +110,10 @@ static GLfloat angle = 0.0f;
 //	// 绘制底面以及纹理
 //	glBindTexture(GL_TEXTURE_2D, texGround);
 //	glBegin(GL_QUADS);
-//	glTexCoord2f(0.0f, 0.0f); glVertex3f(-5.0f, -5.0f, 0.0f);
-//	glTexCoord2f(0.0f, 1.0f); glVertex3f(-5.0f, 5.0f, 0.0f);
-//	glTexCoord2f(1.0f, 1.0f); glVertex3f(5.0f, 5.0f, 0.0f);
-//	glTexCoord2f(1.0f, 0.0f); glVertex3f(5.0f, -5.0f, 0.0f);
+//	glTexCoord2f(0.0f, 0.0f); glVertex3f(-6.0f, -6.0f, 0.0f);
+//	glTexCoord2f(0.0f, 1.0f); glVertex3f(-6.0f, 6.0f, 0.0f);
+//	glTexCoord2f(1.0f, 1.0f); glVertex3f(6.0f, 6.0f, 0.0f);
+//	glTexCoord2f(1.0f, 0.0f); glVertex3f(6.0f, -6.0f, 0.0f);
 //	glEnd();
 //
 //	glutSwapBuffers();
@@ -144,17 +145,44 @@ static GLfloat angle = 0.0f;
 void display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
 
 	//绘制像素
 	glDrawPixels(imagewidth, imageheight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixeldata);
-
+	//glPixelZoom(-0.5f, 0.5f);
 
 	//---------------------------------
+	// 设置视角
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(100, 1, 1, 21);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0, 7, 7, 0, 0, 0, 0, 0, 1);
+
+	glRotatef(angle, 0.0f, 0.0f, 1.0f); //旋转
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	// 绘制底面以及纹理
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1,&texture_ID);
+	
+	glBindTexture(GL_TEXTURE_2D, texture_ID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, imagewidth, imageheight, 0,
+				GL_LUMINANCE, GL_UNSIGNED_BYTE, pixeldata);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f); glVertex3f(-6.0f, -6.0f, 0.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(-6.0f, 6.0f, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex3f(6.0f, 6.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(6.0f, -6.0f, 0.0f);
+	glEnd();
+
 	glFlush();
 	glutSwapBuffers();
 }
 
-int main(int argc, char* argv[])
+
+int LoadTexture(const char* FileName)
 {
 	GLuint texture_ID = 0;
 	//打开文件
@@ -181,17 +209,27 @@ int main(int argc, char* argv[])
 
 	glGenTextures(1, &texture_ID);
 	glBindTexture(GL_TEXTURE_2D, texture_ID);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);*/
+
 
 	//关闭文件
 	fclose(pfile);
 
+}
+
+
+int main(int argc, char* argv[])
+{
+	
 	//初始化glut运行
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 0);
-	glutInitWindowSize(imagewidth, imageheight / 3);
-	glutCreateWindow(FileName);
+	glutInitWindowSize(1024, 1024);
+	glEnable(GL_TEXTURE_2D);  
+	glEnable(GL_DEPTH_TEST);
+	texGround = LoadTexture("Texture.bmp");
+	glutCreateWindow("Test");
 	glutDisplayFunc(&display);
 	glutMainLoop();
 	//-------------------------------------
