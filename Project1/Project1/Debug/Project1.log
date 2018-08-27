@@ -1,5 +1,2 @@
 ﻿  Source.cpp
-d:\git\opengl---texture-test\project1\project1\source.cpp(7): warning C4005: '_CRT_SECURE_NO_DEPRECATE': macro redefinition
-  d:\git\opengl---texture-test\project1\project1\source.cpp: note: see previous definition of '_CRT_SECURE_NO_DEPRECATE'
-d:\git\opengl---texture-test\project1\project1\source.cpp(218): warning C4715: 'LoadTexture': not all control paths return a value
   Project1.vcxproj -> D:\Git\OpenGL---Texture-Test\Project1\Debug\Project1.exe
