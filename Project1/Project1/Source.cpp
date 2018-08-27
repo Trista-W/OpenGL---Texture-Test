@@ -13,7 +13,7 @@ static GLint imagewidth;
 static GLint imageheight;
 static GLint pixellength;
 static GLubyte* pixeldata;
-
+GLubyte* pixels = 0;
 
 //定义两个纹理对象编号
 GLuint texGround;
@@ -24,12 +24,76 @@ static GLfloat angle = 0.0f;
 
 
 
+//GLuint load_texture(const char* file_name)
+//{
+//
+//	static GLint total_bytes;
+//    static GLint height;
+//    static GLint width;
+//	FILE *pFile;
+//
+//	// 打开文件，如果失败，返回
+//	pFile = fopen(file_name, "rb");
+//	if (pFile == 0)
+//		return 0;
+//
+//	// 读取文件中图象的宽度和高度
+//	fseek(pFile, 0x0012, SEEK_SET);
+//	fread(&width, sizeof(width), 1, pFile);
+//    fseek(pFile, 0x0012, SEEK_SET);
+//	fread(&height, sizeof(height), 1, pFile);
+//	
+//
+//	// 计算每行像素所占字节数，并根据此数据计算总像素字节数
+//	{
+//		GLint line_bytes = width * 3;
+//		while (line_bytes % 4 != 0)
+//			++line_bytes;
+//		total_bytes = line_bytes * height;
+//	}
+//
+//	// 根据总像素字节数分配内存
+//	pixels = (GLubyte*)malloc(total_bytes);
+//	if (pixels == 0)
+//	{
+//		fclose(pFile);
+//		return 0;
+//	}
+//
+//	fseek(pFile, 54, SEEK_SET);
+//
+//	// 读取像素数据
+//	if (fread(pixels, total_bytes, 1, pFile) <= 0)
+//	{
+//		free(pixels);
+//		fclose(pFile);
+//		return 0;
+//	}
+//
+//	glEnable(GL_TEXTURE_2D);  //临时放一下 做测试
+//	glGenTextures(1, &texGround);
+//	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);*/
+//	glBindTexture(GL_TEXTURE_2D, texGround);  //恢复之前的纹理绑定
+//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0,
+//		GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
+//
+//
+//
+//
+//	/*free(pixels);*/
+//	return 0;
+//}
+//
 //void display(void)
 //{
 //	// 清除屏幕
 //	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //	//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);	// clear to black
-//	glDrawPixels(imagewidth, imageheight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixeldata);
 //
 //	// 设置视角
 //	glMatrixMode(GL_PROJECTION);
@@ -54,72 +118,6 @@ static GLfloat angle = 0.0f;
 //	glutSwapBuffers();
 //}
 //
-//GLuint load_texture(const char* file_name)
-//{
-//	GLint width, height, total_bytes;
-//	GLuint texture_ID = 0;
-//	GLubyte* pixels = 0;
-//	FILE *pFile;
-//
-//	// 打开文件，如果失败，返回
-//	pFile = fopen(file_name, "rb");
-//	if (pFile == 0)
-//		return 0;
-//
-//	// 读取文件中图象的宽度和高度
-//	fseek(pFile, 0x0012, SEEK_SET);
-//	fread(&width, sizeof(imagewidth), 1, pFile);
-//	fread(&height, sizeof(imageheight), 1, pFile);
-//	//fseek(pFile, BMP_Header_Length, SEEK_SET);
-//
-//	// 计算每行像素所占字节数，并根据此数据计算总像素字节数
-//	{
-//		GLint line_bytes = width * 3;
-//		while (line_bytes % 4 != 0)
-//			++line_bytes;
-//		total_bytes = line_bytes * height;
-//	}
-//
-//	// 根据总像素字节数分配内存
-//	pixels = (GLubyte*)malloc(total_bytes);
-//	if (pixels == 0)
-//	{
-//		fclose(pFile);
-//		return 0;
-//	}
-//
-//	// 读取像素数据
-//	if (fread(pixels, total_bytes, 1, pFile) <= 0)
-//	{
-//		/*free(pixels);*/
-//		fclose(pFile);
-//		return 0;
-//	}
-//
-//	glGenTextures(1, &texture_ID);
-//	glBindTexture(GL_TEXTURE_2D, texture_ID);
-//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-//
-//
-//	GLint last_texture_ID = texture_ID;
-//	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture_ID);
-//	glBindTexture(GL_TEXTURE_2D, last_texture_ID);
-//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-//	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-//	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0,
-//		GL_LUMINANCE, GL_UNSIGNED_BYTE, pixels);
-//	//glBindTexture(GL_TEXTURE_2D, texture_ID);  //恢复之前的纹理绑定
-//
-//
-//
-//	/*free(pixels);*/
-//	return 0;
-//}
-//
-//
 //
 //
 //int main(int argc, char* argv[])
@@ -132,7 +130,8 @@ static GLfloat angle = 0.0f;
 //	glutCreateWindow(WindowTitle);
 //	glEnable(GL_DEPTH_TEST);
 //	texGround = load_texture("Texture.bmp");//加载纹理
-//	glEnable(GL_TEXTURE_2D);// 启用纹理    
+//	glEnable(GL_TEXTURE_2D);// 启用纹理 
+//	glBindTexture(GL_TEXTURE_2D, texGround);
 //	glutDisplayFunc(&display);   //注册函数 
 //	/*glutIdleFunc(&myIdle);*/
 //	glutMainLoop(); //循环调用
@@ -149,6 +148,7 @@ void display(void)
 	//绘制像素
 	glDrawPixels(imagewidth, imageheight, GL_BGR_EXT, GL_UNSIGNED_BYTE, pixeldata);
 
+
 	//---------------------------------
 	glFlush();
 	glutSwapBuffers();
@@ -164,6 +164,7 @@ int main(int argc, char* argv[])
 	//读取图像大小
 	fseek(pfile, 0x0012, SEEK_SET);
 	fread(&imagewidth, sizeof(imagewidth), 1, pfile);
+	fseek(pfile, 0x0012, SEEK_SET);
 	fread(&imageheight, sizeof(imageheight), 1, pfile);
 
 	//计算像素数据长度
@@ -188,8 +189,8 @@ int main(int argc, char* argv[])
 	//初始化glut运行
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(imagewidth, imageheight);
+	glutInitWindowPosition(100, 0);
+	glutInitWindowSize(imagewidth, imageheight / 3);
 	glutCreateWindow(FileName);
 	glutDisplayFunc(&display);
 	glutMainLoop();
