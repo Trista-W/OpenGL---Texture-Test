@@ -8,8 +8,6 @@
 #include <stdlib.h>
 
 
-
-
 GLuint texGround;
 
 GLuint load_texture(const char* file_name)
