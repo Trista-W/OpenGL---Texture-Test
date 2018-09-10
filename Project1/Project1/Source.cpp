@@ -32,12 +32,12 @@ GLuint load_texture(const char* file_name)
     static GLint width;
 	FILE *pFile;
 
-	// 打开文件，如果失败，返回
+	// Open the file, if it fails, return 0
 	pFile = fopen(file_name, "rb");
 	if (pFile == 0)
 		return 0;
 
-	// 读取文件中图象的宽度和高度
+	// Reading the width and height parameters of the image
 	fseek(pFile, 0x0012, SEEK_SET);
 	fread(&width, sizeof(width), 1, pFile);
     fseek(pFile, 0x0012, SEEK_SET);
